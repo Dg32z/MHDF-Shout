@@ -28,18 +28,18 @@ import java.util.List;
 
 public final class PluginMessage implements PluginMessageListener {
 
-    private static final String CHANNEL_BUNGEECORD = "BungeeCord";
-    private static final String SUBCHANNEL_MHDFSHOUT = "MHDFShout";
+    private static final String Bungee_Channel = "BungeeCord";
+    private static final String Spigot_Channel = "MHDFShout";
 
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
-        if (!channel.equals(CHANNEL_BUNGEECORD)) {
+        if (!channel.equals(Bungee_Channel)) {
             return;
         }
 
         try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(message))) {
             String subchannel = in.readUTF();
 
-            if (!subchannel.equals(SUBCHANNEL_MHDFSHOUT)) {
+            if (!subchannel.equals(Spigot_Channel)) {
                 return;
             }
 

@@ -1,0 +1,21 @@
+name: MHDF-Shout
+version: '2.0.0'
+main: cn.chengzhiya.mhdfshout.main
+api-version: '1.20'
+depend: [ PlaceholderAPI ]
+permissions:
+  MHDFShout.Bypass.Delay:
+    default: op
+    description: 绕过冷却
+  MHDFShout.Bypass.Length:
+    default: op
+    description: 绕过长度限制
+  MHDFShout.Bypass.BlackWord:
+    default: op
+    description: 绕过屏蔽词
+  MHDFShout.Commands.Reload:
+    default: op
+    description: 重载权限
+libraries:
+  - 'com.alibaba:fastjson:1.2.83'
+  - 'org.projectlombok:lombok:1.18.32'

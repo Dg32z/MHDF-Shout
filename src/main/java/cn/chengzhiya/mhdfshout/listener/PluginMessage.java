@@ -13,55 +13,79 @@ package cn.chengzhiya.mhdfshout.listener;
 import cn.chengzhiya.mhdfshout.entity.Shout;
 import cn.chengzhiya.mhdfshout.util.Util;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.messaging.PluginMessageListener;
-import org.jetbrains.annotations.NotNull;
 
-public final class PluginMessage
-implements PluginMessageListener {
+public final class PluginMessage implements PluginMessageListener {
+
+    private static final String CHANNEL_BUNGEECORD = "BungeeCord";
+    private static final String SUBCHANNEL_MHDFSHOUT = "MHDFShout";
+
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
-        if (!channel.equals("BungeeCord")) {
+        if (!channel.equals(CHANNEL_BUNGEECORD)) {
             return;
         }
-        DataInputStream in = new DataInputStream(new ByteArrayInputStream(message));
-        try {
+
+        try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(message))) {
             String subchannel = in.readUTF();
-            if (subchannel.equals("MHDFShout")) {
-                JSONObject data = JSON.parseObject((String)in.readUTF());
-                switch (data.getString("action")) {
-                    case "sendShout": {
-                        String shoutType = data.getJSONObject("params").getString("shoutType");
-                        Shout shout = new Shout(data.getJSONObject("params").getString("shoutBossBarColor"), data.getJSONObject("params").getString("shoutBossBarBackground"), data.getJSONObject("params").getString("shoutMessage"), data.getJSONObject("params").getString("shoutSound"), data.getJSONObject("params").getInteger("shoutShowTime"));
-                        List<Object> shoutWaitList = new ArrayList<>(Util.getShoutWaitHashMap().get(shoutType) != null ? Collections.singletonList(Util.getShoutWaitHashMap().get(shoutType)) : new ArrayList<>());
-                        shoutWaitList.add(shout);
-                        if (data.getJSONObject("params").getBoolean("shoutWait")) {
-                            if (Util.getShoutWaitHashMap().get(shoutType).size() != 1) break;
+
+            if (!subchannel.equals(SUBCHANNEL_MHDFSHOUT)) {
+                return;
+            }
+
+            String jsonMessage = in.readUTF();
+            JSONObject data = JSON.parseObject(jsonMessage);
+
+            String action = data.getString("action");
+            JSONObject params = data.getJSONObject("params");
+
+            switch (action) {
+                case "sendShout": {
+                    String shoutType = params.getString("shoutType");
+                    Shout shout = new Shout(
+                            params.getString("shoutBossBarColor"),
+                            params.getString("shoutBossBarBackground"),
+                            params.getString("shoutMessage"),
+                            params.getString("shoutSound"),
+                            params.getInteger("shoutShowTime")
+                    );
+
+                    List<Object> shoutWaitList = new ArrayList<>(Collections.singletonList(Util.getShoutWaitHashMap().computeIfAbsent(shoutType, k -> new ArrayList<>())));
+                    shoutWaitList.add(shout);
+
+                    if (params.getBoolean("shoutWait")) {
+                        if (shoutWaitList.size() == 1) {
                             Util.startShout(shoutType);
-                            break;
                         }
+                    } else {
                         Util.sendShout(shout);
-                        break;
                     }
-                    case "getDelay": {
-                        if (data.getJSONObject("params").getIntValue("delay") != -1) {
-                            Util.getShoutDelayHashMap().put(data.getJSONObject("params").getString("player"), data.getJSONObject("params").getIntValue("delay"));
-                            break;
-                        }
-                        Util.getShoutDelayHashMap().remove(data.getJSONObject("params").getString("player"));
+                    break;
+                }
+                case "getDelay": {
+                    String playerKey = params.getString("player");
+                    int delay = params.getIntValue("delay");
+
+                    if (delay != -1) {
+                        Util.getShoutDelayHashMap().put(playerKey, delay);
+                    } else {
+                        Util.getShoutDelayHashMap().remove(playerKey);
                     }
+                    break;
                 }
             }
-        }
-        catch (IOException iOException) {
-            // empty catch block
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
         }
     }
 }
-

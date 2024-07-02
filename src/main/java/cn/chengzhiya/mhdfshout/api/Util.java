@@ -1,22 +1,13 @@
-/*
- * Decompiled with CFR 0.152.
- * 
- * Could not load the following classes:
- *  com.iridium.iridiumcolorapi.IridiumColorAPI
- *  org.bukkit.Bukkit
- *  org.bukkit.ChatColor
- *  org.bukkit.command.ConsoleCommandSender
- */
 package cn.chengzhiya.mhdfshout.api;
+
+import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
+import org.bukkit.command.ConsoleCommandSender;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
-import org.bukkit.command.ConsoleCommandSender;
 
 public final class Util {
     public static String ChatColor(String Message) {

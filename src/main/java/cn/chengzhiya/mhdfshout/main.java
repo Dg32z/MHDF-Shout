@@ -18,15 +18,14 @@ import cn.chengzhiya.mhdfshout.entity.Shout;
 import cn.chengzhiya.mhdfshout.listener.PluginMessage;
 import cn.chengzhiya.mhdfshout.task.TakeShoutDelay;
 import cn.chengzhiya.mhdfshout.util.Util;
-import java.io.File;
-import java.util.Objects;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.messaging.PluginMessageListener;
+
+import java.io.File;
+import java.util.Objects;
 
 public final class main
 extends JavaPlugin {
@@ -43,7 +42,7 @@ extends JavaPlugin {
     public void onEnable() {
         boolean Stats;
         main = this;
-        adventure = BukkitAudiences.create((Plugin)this);
+        adventure = BukkitAudiences.create(this);
         File PluginHome = this.getDataFolder();
         File ConfigFile = new File(PluginHome, "config.yml");
         File LangFile = new File(PluginHome, "lang.yml");
@@ -56,7 +55,7 @@ extends JavaPlugin {
         if (!LangFile.exists()) {
             YamlFileUtil.SaveResource(this.getDataFolder().getPath(), "lang.yml", "lang.yml", true);
         }
-        Util.registerCommand((Plugin)this, new ShoutReload(), "\u91cd\u8f7d\u914d\u7f6e", "shoutreload");
+        Util.registerCommand(this, new ShoutReload(), "\u91cd\u8f7d\u914d\u7f6e", "shoutreload");
         for (String shouts : Objects.requireNonNull(this.getConfig().getConfigurationSection("HornSettings")).getKeys(false)) {
             CommandExecutor commandExecutor = (sender, command, label, args) -> {
                 if (sender.hasPermission(Objects.requireNonNull(this.getConfig().getString("HornSettings." + shouts + ".Permission")))) {
@@ -82,7 +81,7 @@ extends JavaPlugin {
                                 return false;
                             }
                         }
-                        String shoutMessage = cn.chengzhiya.mhdfshout.api.Util.ChatColor(PlaceholderAPI.setPlaceholders((Player)(sender instanceof Player ? (Player)sender : null), (String)Objects.requireNonNull(this.getConfig().getString("HornSettings." + shouts + ".MessageFormat")))).replaceAll("\\{Message}", this.getConfig().getBoolean("HornSettings." + shouts + ".Color") ? cn.chengzhiya.mhdfshout.api.Util.ChatColor(shoutMessageBuilder.toString()) : shoutMessageBuilder.toString());
+                        String shoutMessage = cn.chengzhiya.mhdfshout.api.Util.ChatColor(PlaceholderAPI.setPlaceholders(sender instanceof Player ? (Player)sender : null, Objects.requireNonNull(this.getConfig().getString("HornSettings." + shouts + ".MessageFormat")))).replaceAll("\\{Message}", this.getConfig().getBoolean("HornSettings." + shouts + ".Color") ? cn.chengzhiya.mhdfshout.api.Util.ChatColor(shoutMessageBuilder.toString()) : shoutMessageBuilder.toString());
                         Shout shout = new Shout(this.getConfig().getString("HornSettings." + shouts + ".BossBarColor"), this.getConfig().getString("HornSettings." + shouts + ".NullBossBarMessage"), shoutMessage, Objects.requireNonNull(this.getConfig().getString("HornSettings." + shouts + ".Sound")), this.getConfig().getInt("HornSettings." + shouts + ".ShowTime"));
                         if (!sender.hasPermission("MHDFShout.Bypass.Delay")) {
                             Util.setDelay(sender.getName(), this.getConfig().getInt("ShoutSettings.Delay"));
@@ -102,10 +101,10 @@ extends JavaPlugin {
                 return false;
             };
             for (String commands : this.getConfig().getStringList("HornSettings." + shouts + ".Commands")) {
-                Util.registerCommand((Plugin)this, commandExecutor, shouts, commands);
+                Util.registerCommand(this, commandExecutor, shouts, commands);
             }
         }
-        new TakeShoutDelay().runTaskTimerAsynchronously((Plugin)this, 0L, 20L);
+        new TakeShoutDelay().runTaskTimerAsynchronously(this, 0L, 20L);
         cn.chengzhiya.mhdfshout.api.Util.ColorLog("&f[MHDF-Shout] &d  __  __ _    _ _____  ______    _____ _                 _   ");
         cn.chengzhiya.mhdfshout.api.Util.ColorLog("&f[MHDF-Shout] &d |  \\/  | |  | |  __ \\|  ____|  / ____| |               | |  ");
         cn.chengzhiya.mhdfshout.api.Util.ColorLog("&f[MHDF-Shout] &d | \\  / | |__| | |  | | |__    | (___ | |__   ___  _   _| |_ ");
@@ -114,8 +113,8 @@ extends JavaPlugin {
         cn.chengzhiya.mhdfshout.api.Util.ColorLog("&f[MHDF-Shout] &d |_|  |_|_|  |_|_____/|_|      |_____/|_| |_|\\___/ \\__,_|\\__|");
         cn.chengzhiya.mhdfshout.api.Util.ColorLog("&f[MHDF-Shout]");
         if (this.getConfig().getBoolean("BungeeCordMode")) {
-            this.getServer().getMessenger().registerOutgoingPluginChannel((Plugin)this, "BungeeCord");
-            this.getServer().getMessenger().registerIncomingPluginChannel((Plugin)this, "BungeeCord", (PluginMessageListener)new PluginMessage());
+            this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+            this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new PluginMessage());
             cn.chengzhiya.mhdfshout.api.Util.ColorLog("&f[MHDF-Shout] &a\u5df2\u8fde\u63a5BC!");
         }
         cn.chengzhiya.mhdfshout.api.Util.ColorLog("&f[MHDF-Shout] &a\u63d2\u4ef6\u52a0\u8f7d\u5b8c\u6210!");

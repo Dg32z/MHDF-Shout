@@ -1,6 +1,3 @@
-/*
- * Decompiled with CFR 0.152.
- */
 package cn.chengzhiya.mhdfshout.api;
 
 import java.io.File;

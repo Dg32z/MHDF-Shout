@@ -27,16 +27,10 @@ import cn.chengzhiya.mhdfshout.main;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.util.*;
-
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
@@ -44,7 +38,11 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.SimplePluginManager;
-import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.*;
 
 public final class Util {
     public static YamlConfiguration Lang = null;
@@ -55,7 +53,7 @@ public final class Util {
         PluginCommand command = Util.getCommand(aliases[0], plugin);
         command.setAliases(Arrays.asList(aliases));
         command.setDescription(description);
-        Util.getCommandMap().register(plugin.getDescription().getName(), (Command)command);
+        Util.getCommandMap().register(plugin.getDescription().getName(), command);
         command.setExecutor(commandExecutor);
     }
 
@@ -90,7 +88,7 @@ public final class Util {
     public static String i18n(String Value) {
         if (Lang == null) {
             File LangFile = new File(main.main.getDataFolder(), "lang.yml");
-            Lang = YamlConfiguration.loadConfiguration((File)LangFile);
+            Lang = YamlConfiguration.loadConfiguration(LangFile);
         }
         return cn.chengzhiya.mhdfshout.api.Util.ChatColor(Lang.getString(Value));
     }
@@ -106,44 +104,38 @@ public final class Util {
                 Util.sendShout(shout);
             }
         } else {
-            final JSONObject data = getJsonObject(shoutType, wait, shout);
+            JSONObject data = new JSONObject();
+            data.put("action", "sendShout");
+
+            JSONObject params = new JSONObject();
+            params.put("shoutType", shoutType);
+            params.put("shoutWait", wait);
+            params.put("shoutBossBarColor", shout.getBossBarColor());
+            params.put("shoutBossBarBackground", shout.getBossBarBackground());
+            params.put("shoutMessage", shout.getMessage());
+            params.put("shoutSound", shout.getSound());
+            params.put("shoutShowTime", shout.getShowTime());
+
+            data.put("params", params);
 
             Util.sendPluginMessage(data.toJSONString());
         }
     }
 
-    @NotNull
-    private static JSONObject getJsonObject(String shoutType, boolean wait, Shout shout) {
-        JSONObject data = new JSONObject();
-        data.put("action", "sendShout");
-
-        JSONObject params = new JSONObject();
-        params.put("shoutType", shoutType);
-        params.put("shoutWait", wait);
-        params.put("shoutBossBarColor", shout.getBossBarColor());
-        params.put("shoutBossBarBackground", shout.getBossBarBackground());
-        params.put("shoutMessage", shout.getMessage());
-        params.put("shoutSound", shout.getSound());
-        params.put("shoutShowTime", shout.getShowTime());
-
-        data.put("params", params);
-        return data;
-    }
-
     public static void sendShout(Shout shout) {
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            BossBar NullBossBar = BossBar.bossBar((Component)Component.text((String)shout.getBossBarBackground()), (float)1.0f, (BossBar.Color)BossBar.Color.valueOf((String)shout.getBossBarColor()), (BossBar.Overlay)BossBar.Overlay.PROGRESS);
-            BossBar ShoutBossBar = BossBar.bossBar((Component)Component.text((String)shout.getMessage()), (float)1.0f, (BossBar.Color)BossBar.Color.valueOf((String)shout.getBossBarColor()), (BossBar.Overlay)BossBar.Overlay.PROGRESS);
+            BossBar NullBossBar = BossBar.bossBar(Component.text(shout.getBossBarBackground()), 1.0f, BossBar.Color.valueOf(shout.getBossBarColor()), BossBar.Overlay.PROGRESS);
+            BossBar ShoutBossBar = BossBar.bossBar(Component.text(shout.getMessage()), 1.0f, BossBar.Color.valueOf(shout.getBossBarColor()), BossBar.Overlay.PROGRESS);
             main.adventure().player(onlinePlayer).showBossBar(NullBossBar);
             main.adventure().player(onlinePlayer).showBossBar(ShoutBossBar);
             String[] sound = shout.getSound().split("\\|");
             try {
-                onlinePlayer.playSound(onlinePlayer.getLocation(), Sound.valueOf((String)sound[0]), Float.parseFloat(sound[1]), Float.parseFloat(sound[2]));
+                onlinePlayer.playSound(onlinePlayer.getLocation(), Sound.valueOf(sound[0]), Float.parseFloat(sound[1]), Float.parseFloat(sound[2]));
             }
             catch (Exception e) {
                 onlinePlayer.playSound(onlinePlayer.getLocation(), sound[0], Float.parseFloat(sound[1]), Float.parseFloat(sound[2]));
             }
-            Bukkit.getScheduler().runTaskLaterAsynchronously((Plugin)main.main, () -> {
+            Bukkit.getScheduler().runTaskLaterAsynchronously(main.main, () -> {
                 main.adventure().player(onlinePlayer).hideBossBar(NullBossBar);
                 main.adventure().player(onlinePlayer).hideBossBar(ShoutBossBar);
             }, 20L * (long)shout.getShowTime());
@@ -154,7 +146,7 @@ public final class Util {
         List<Shout> shoutWaitList = Util.getShoutWaitHashMap().get(shoutType);
         Shout shout = Util.getShoutWaitHashMap().get(shoutType).get(0);
         Util.sendShout(shout);
-        Bukkit.getScheduler().runTaskLaterAsynchronously((Plugin)main.main, () -> {
+        Bukkit.getScheduler().runTaskLaterAsynchronously(main.main, () -> {
             shoutWaitList.remove(shout);
             Util.getShoutWaitHashMap().put(shoutType, shoutWaitList);
             if (!shoutWaitList.isEmpty()) {
@@ -166,10 +158,10 @@ public final class Util {
     public static void updateDelay(String player) {
         if (main.main.getConfig().getBoolean("BungeeCordMode")) {
             JSONObject data = new JSONObject();
-            data.put("action", (Object)"getDelay");
+            data.put("action", "getDelay");
             JSONObject params = new JSONObject();
-            params.put("player", (Object)player);
-            data.put("params", (Object)params);
+            params.put("player", player);
+            data.put("params", params);
             Util.sendPluginMessage(data.toJSONString());
         }
     }
@@ -178,11 +170,11 @@ public final class Util {
         Util.getShoutDelayHashMap().put(player, delay);
         if (main.main.getConfig().getBoolean("BungeeCordMode")) {
             JSONObject data = new JSONObject();
-            data.put("action", (Object)"setDelay");
+            data.put("action", "setDelay");
             JSONObject params = new JSONObject();
-            params.put("player", (Object)player);
-            params.put("delay", (Object)delay);
-            data.put("params", (Object)params);
+            params.put("player", player);
+            params.put("delay", delay);
+            data.put("params", params);
             Util.sendPluginMessage(data.toJSONString());
         }
     }
@@ -195,7 +187,7 @@ public final class Util {
             Iterator iterator = Bukkit.getOnlinePlayers().iterator();
             if (!iterator.hasNext()) break block0;
             Player player = (Player)iterator.next();
-            player.sendPluginMessage((Plugin)main.main, "BungeeCord", out.toByteArray());
+            player.sendPluginMessage(main.main, "BungeeCord", out.toByteArray());
         }
     }
 

@@ -11,7 +11,7 @@
 package cn.chengzhiya.mhdfshout.listener;
 
 import cn.chengzhiya.mhdfshout.entity.Shout;
-import cn.chengzhiya.mhdfshout.util.Util;
+import cn.chengzhiya.mhdfshout.utils.PluginUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
@@ -60,15 +60,15 @@ public final class PluginMessage implements PluginMessageListener {
                             params.getInteger("shoutShowTime")
                     );
 
-                    List<Object> shoutWaitList = new ArrayList<>(Collections.singletonList(Util.getShoutWaitHashMap().computeIfAbsent(shoutType, k -> new ArrayList<>())));
+                    List<Object> shoutWaitList = new ArrayList<>(Collections.singletonList(PluginUtil.getShoutWaitHashMap().computeIfAbsent(shoutType, k -> new ArrayList<>())));
                     shoutWaitList.add(shout);
 
                     if (params.getBoolean("shoutWait")) {
                         if (shoutWaitList.size() == 1) {
-                            Util.startShout(shoutType);
+                            PluginUtil.startShout(shoutType);
                         }
                     } else {
-                        Util.sendShout(shout);
+                        PluginUtil.sendShout(shout);
                     }
                     break;
                 }
@@ -77,9 +77,9 @@ public final class PluginMessage implements PluginMessageListener {
                     int delay = params.getIntValue("delay");
 
                     if (delay != -1) {
-                        Util.getShoutDelayHashMap().put(playerKey, delay);
+                        PluginUtil.getShoutDelayHashMap().put(playerKey, delay);
                     } else {
-                        Util.getShoutDelayHashMap().remove(playerKey);
+                        PluginUtil.getShoutDelayHashMap().remove(playerKey);
                     }
                     break;
                 }

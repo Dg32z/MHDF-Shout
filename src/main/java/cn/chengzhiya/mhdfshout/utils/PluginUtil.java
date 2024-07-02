@@ -1,32 +1,12 @@
-/*
- * Decompiled with CFR 0.152.
- * 
- * Could not load the following classes:
- *  com.alibaba.fastjson.JSONObject
- *  com.google.common.io.ByteArrayDataOutput
- *  com.google.common.io.ByteStreams
- *  net.kyori.adventure.bossbar.BossBar
- *  net.kyori.adventure.bossbar.BossBar$Color
- *  net.kyori.adventure.bossbar.BossBar$Overlay
- *  net.kyori.adventure.text.Component
- *  org.bukkit.Bukkit
- *  org.bukkit.Sound
- *  org.bukkit.command.Command
- *  org.bukkit.command.CommandExecutor
- *  org.bukkit.command.CommandMap
- *  org.bukkit.command.PluginCommand
- *  org.bukkit.configuration.file.YamlConfiguration
- *  org.bukkit.entity.Player
- *  org.bukkit.plugin.Plugin
- *  org.bukkit.plugin.SimplePluginManager
- */
-package cn.chengzhiya.mhdfshout.util;
+package cn.chengzhiya.mhdfshout.utils;
 
+import cn.chengzhiya.mhdfshout.api.PluginAPI;
 import cn.chengzhiya.mhdfshout.entity.Shout;
 import cn.chengzhiya.mhdfshout.main;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import lombok.Getter;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -38,31 +18,34 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.SimplePluginManager;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.*;
 
-public final class Util {
+public final class PluginUtil {
     public static YamlConfiguration Lang = null;
-    public static HashMap<String, List<Shout>> shoutWaitHashMap = new HashMap();
-    public static HashMap<String, Integer> shoutDelayHashMap = new HashMap();
+    @Getter
+    public static HashMap<String, List<Shout>> shoutWaitHashMap = new HashMap<>();
+    @Getter
+    public static HashMap<String, Integer> shoutDelayHashMap = new HashMap<>();
 
     public static void registerCommand(Plugin plugin, CommandExecutor commandExecutor, String description, String ... aliases) {
-        PluginCommand command = Util.getCommand(aliases[0], plugin);
+        PluginCommand command = cn.chengzhiya.mhdfshout.utils.PluginUtil.getCommand(aliases[0], plugin);
         command.setAliases(Arrays.asList(aliases));
         command.setDescription(description);
-        Util.getCommandMap().register(plugin.getDescription().getName(), command);
+        cn.chengzhiya.mhdfshout.utils.PluginUtil.getCommandMap().register(plugin.getDescription().getName(), command);
         command.setExecutor(commandExecutor);
     }
 
     private static PluginCommand getCommand(String name, Plugin plugin) {
         PluginCommand command = null;
         try {
-            Constructor c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
+            Constructor<PluginCommand> c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
             c.setAccessible(true);
-            command = (PluginCommand)c.newInstance(name, plugin);
+            command = c.newInstance(name, plugin);
         }
         catch (Exception exception) {
             // empty catch block
@@ -90,36 +73,42 @@ public final class Util {
             File LangFile = new File(main.main.getDataFolder(), "lang.yml");
             Lang = YamlConfiguration.loadConfiguration(LangFile);
         }
-        return cn.chengzhiya.mhdfshout.api.Util.ChatColor(Lang.getString(Value));
+        return PluginAPI.ChatColor(Lang.getString(Value));
     }
 
     public static void sendShout(String shoutType, boolean wait, Shout shout) {
         if (!main.main.getConfig().getBoolean("BungeeCordMode")) {
-            List<Object> shoutWaitList = new ArrayList<>(Collections.singletonList(Util.shoutWaitHashMap.computeIfAbsent(shoutType, k -> new ArrayList<>())));
+            List<Object> shoutWaitList = new ArrayList<>(Collections.singletonList(cn.chengzhiya.mhdfshout.utils.PluginUtil.shoutWaitHashMap.computeIfAbsent(shoutType, k -> new ArrayList<>())));
             shoutWaitList.add(shout);
 
             if (wait && shoutWaitList.size() == 1) {
-                Util.startShout(shoutType);
+                cn.chengzhiya.mhdfshout.utils.PluginUtil.startShout(shoutType);
             } else if (!wait) {
-                Util.sendShout(shout);
+                cn.chengzhiya.mhdfshout.utils.PluginUtil.sendShout(shout);
             }
         } else {
-            JSONObject data = new JSONObject();
-            data.put("action", "sendShout");
+            final JSONObject data = getJsonObject(shoutType, wait, shout);
 
-            JSONObject params = new JSONObject();
-            params.put("shoutType", shoutType);
-            params.put("shoutWait", wait);
-            params.put("shoutBossBarColor", shout.getBossBarColor());
-            params.put("shoutBossBarBackground", shout.getBossBarBackground());
-            params.put("shoutMessage", shout.getMessage());
-            params.put("shoutSound", shout.getSound());
-            params.put("shoutShowTime", shout.getShowTime());
-
-            data.put("params", params);
-
-            Util.sendPluginMessage(data.toJSONString());
+            cn.chengzhiya.mhdfshout.utils.PluginUtil.sendPluginMessage(data.toJSONString());
         }
+    }
+
+    @NotNull
+    private static JSONObject getJsonObject(String shoutType, boolean wait, Shout shout) {
+        JSONObject data = new JSONObject();
+        data.put("action", "sendShout");
+
+        JSONObject params = new JSONObject();
+        params.put("shoutType", shoutType);
+        params.put("shoutWait", wait);
+        params.put("shoutBossBarColor", shout.getBossBarColor());
+        params.put("shoutBossBarBackground", shout.getBossBarBackground());
+        params.put("shoutMessage", shout.getMessage());
+        params.put("shoutSound", shout.getSound());
+        params.put("shoutShowTime", shout.getShowTime());
+
+        data.put("params", params);
+        return data;
     }
 
     public static void sendShout(Shout shout) {
@@ -143,14 +132,14 @@ public final class Util {
     }
 
     public static void startShout(String shoutType) {
-        List<Shout> shoutWaitList = Util.getShoutWaitHashMap().get(shoutType);
-        Shout shout = Util.getShoutWaitHashMap().get(shoutType).get(0);
-        Util.sendShout(shout);
+        List<Shout> shoutWaitList = cn.chengzhiya.mhdfshout.utils.PluginUtil.getShoutWaitHashMap().get(shoutType);
+        Shout shout = cn.chengzhiya.mhdfshout.utils.PluginUtil.getShoutWaitHashMap().get(shoutType).get(0);
+        cn.chengzhiya.mhdfshout.utils.PluginUtil.sendShout(shout);
         Bukkit.getScheduler().runTaskLaterAsynchronously(main.main, () -> {
             shoutWaitList.remove(shout);
-            Util.getShoutWaitHashMap().put(shoutType, shoutWaitList);
+            cn.chengzhiya.mhdfshout.utils.PluginUtil.getShoutWaitHashMap().put(shoutType, shoutWaitList);
             if (!shoutWaitList.isEmpty()) {
-                Util.startShout(shoutType);
+                cn.chengzhiya.mhdfshout.utils.PluginUtil.startShout(shoutType);
             }
         }, 20L * (long)shout.getShowTime());
     }
@@ -162,12 +151,12 @@ public final class Util {
             JSONObject params = new JSONObject();
             params.put("player", player);
             data.put("params", params);
-            Util.sendPluginMessage(data.toJSONString());
+            cn.chengzhiya.mhdfshout.utils.PluginUtil.sendPluginMessage(data.toJSONString());
         }
     }
 
     public static void setDelay(String player, int delay) {
-        Util.getShoutDelayHashMap().put(player, delay);
+        cn.chengzhiya.mhdfshout.utils.PluginUtil.getShoutDelayHashMap().put(player, delay);
         if (main.main.getConfig().getBoolean("BungeeCordMode")) {
             JSONObject data = new JSONObject();
             data.put("action", "setDelay");
@@ -175,7 +164,7 @@ public final class Util {
             params.put("player", player);
             params.put("delay", delay);
             data.put("params", params);
-            Util.sendPluginMessage(data.toJSONString());
+            cn.chengzhiya.mhdfshout.utils.PluginUtil.sendPluginMessage(data.toJSONString());
         }
     }
 
@@ -184,19 +173,12 @@ public final class Util {
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("MHDFShout");
             out.writeUTF(data);
-            Iterator iterator = Bukkit.getOnlinePlayers().iterator();
+            Iterator<? extends Player> iterator = Bukkit.getOnlinePlayers().iterator();
             if (!iterator.hasNext()) break block0;
-            Player player = (Player)iterator.next();
+            Player player = iterator.next();
             player.sendPluginMessage(main.main, "BungeeCord", out.toByteArray());
         }
     }
 
-    public static HashMap<String, List<Shout>> getShoutWaitHashMap() {
-        return shoutWaitHashMap;
-    }
-
-    public static HashMap<String, Integer> getShoutDelayHashMap() {
-        return shoutDelayHashMap;
-    }
 }
 

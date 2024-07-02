@@ -23,7 +23,7 @@ HornSettings:
     #Boss血条颜色
     BossBarColor: YELLOW
     #文本格式
-    MessageFormat: "&f뢆 &f%luckperms_prefix% %player_name% &f{Message}"
+    MessageFormat: "&f%luckperms_prefix% %player_name% &f{Message}"
     #音效 [<音频>|<音量|<音效>]
     Sound: "ENTITY_WOLF_AMBIENT|25|0.9"
   #自定义名称
@@ -46,7 +46,7 @@ HornSettings:
     #Boss血条颜色
     BossBarColor: YELLOW
     #文本格式
-    MessageFormat: "&f뢆 &f%luckperms_prefix% %player_name% &f{Message}"
+    MessageFormat: "&f%luckperms_prefix% %player_name% &f{Message}"
     #音效 [<音频>|<音量|<音效>]
     Sound: "ENTITY_VILLAGER_AMBIENT|25|0.9"
   #自定义名称
@@ -69,7 +69,7 @@ HornSettings:
     #Boss血条颜色
     BossBarColor: YELLOW
     #文本格式
-    MessageFormat: "&f뢆 &f%luckperms_prefix% %player_name% &f{Message}"
+    MessageFormat: "&f%luckperms_prefix% %player_name% &f{Message}"
     #音效 [<音频>|<音量|<音效>]
     Sound: "ENTITY_RABBIT_DEATH|25|0.9"
   #自定义名称
@@ -92,7 +92,7 @@ HornSettings:
     #Boss血条颜色
     BossBarColor: YELLOW
     #文本格式
-    MessageFormat: "&f뢆 &f%luckperms_prefix% %player_name% &f{Message}"
+    MessageFormat: "&f%luckperms_prefix% %player_name% &f{Message}"
     #音效 [<音频>|<音量|<音效>]
     Sound: "ENTITY_CHICKEN_EGG|25|0.9"
   #自定义名称
@@ -115,7 +115,7 @@ HornSettings:
     #Boss血条颜色
     BossBarColor: YELLOW
     #文本格式
-    MessageFormat: "&f뢆 &f%luckperms_prefix% %player_name% &f{Message}"
+    MessageFormat: "&f%luckperms_prefix% %player_name% &f{Message}"
     #音效 [<音频>|<音量|<音效>]
     Sound: "ENTITY_WITHER_AMBIENT|25|0.9"
   #自定义名称

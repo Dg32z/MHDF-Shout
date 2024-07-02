@@ -4,12 +4,10 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class Util {
+public final class PluginAPI {
     public static String ChatColor(String Message) {
         Message = translateHexCodes(Message);
         return ChatColor.translateAlternateColorCodes('&', Message);
@@ -29,19 +27,7 @@ public final class Util {
 
     public static void ColorLog(String Message) {
         ConsoleCommandSender consoleCommandSender = Bukkit.getConsoleSender();
-        consoleCommandSender.sendMessage(Util.ChatColor(Message));
-    }
-
-    public static void CreateFolder(File file) {
-        file.mkdirs();
-    }
-
-    public static void CreateFile(File file) throws IOException {
-        file.createNewFile();
-    }
-
-    public static void CopyFile(File DataFolder, String FileName) {
-        YamlFileUtil.SaveResource(DataFolder.getPath(), FileName, FileName, true);
+        consoleCommandSender.sendMessage(PluginAPI.ChatColor(Message));
     }
 }
 

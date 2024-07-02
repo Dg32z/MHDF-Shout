@@ -19,26 +19,5 @@ public final class Shout {
         this.Sound = Sound;
         this.ShowTime = ShowTime;
     }
-
-    public void setBossBarColor(String BossBarColor) {
-        this.BossBarColor = BossBarColor;
-    }
-
-    public void setBossBarBackground(String BossBarBackground) {
-        this.BossBarBackground = BossBarBackground;
-    }
-
-    public void setMessage(String Message) {
-        this.Message = Message;
-    }
-
-    public void setSound(String Sound) {
-        this.Sound = Sound;
-    }
-
-    public void setShowTime(int ShowTime) {
-        this.ShowTime = ShowTime;
-    }
-
 }
 

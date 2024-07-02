@@ -1,4 +1,4 @@
-package cn.chengzhiya.mhdfshout.api;
+package cn.chengzhiya.mhdfshout.utils.file;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -7,10 +7,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-public final class YamlFileUtil {
-    public static InputStream GetResource(String filename) {
+public final class YamlType {
+    public static InputStream getResource(String filename) {
         try {
-            URL URL2 = YamlFileUtil.class.getClassLoader().getResource(filename);
+            URL URL2 = YamlType.class.getClassLoader().getResource(filename);
             if (URL2 == null) {
                 return null;
             }
@@ -23,11 +23,11 @@ public final class YamlFileUtil {
         }
     }
 
-    public static void SaveResource(String FilePath, String OutFileName, String ResourcePath, boolean Replace) {
+    public static void saveResource(String FilePath, String OutFileName, String ResourcePath, boolean Replace) {
         if (ResourcePath.isEmpty()) {
             throw new IllegalArgumentException("ResourcePath cannot be null or empty");
         }
-        InputStream in = YamlFileUtil.GetResource(ResourcePath = ResourcePath.replace('\\', '/'));
+        InputStream in = YamlType.getResource(ResourcePath = ResourcePath.replace('\\', '/'));
         if (in == null) {
             throw new IllegalArgumentException("The embedded resource '" + ResourcePath + "' cannot be found in " + ResourcePath);
         }
